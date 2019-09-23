@@ -28,8 +28,11 @@ import matplotlib.pyplot as plt
 mu_init = 0; sd_init = 2; 
 
 # Draw 30 samples from a normal dist N(0,2)
-n=30; x = np.linspace(-5,5,n);
+n=30; x = np.linspace(-10,10,n);
 y0 = np.random.normal(mu_init,sd_init,n)
+
+# Add noise to samples
+y0 =  np.append(y0, [8, 9, 10])
 
 # Estimate mu and sigma from samples
 mu_est = np.mean(y0)
@@ -37,13 +40,18 @@ sd_est = np.std(y0)
 
 # Define likelihood function
 def model(params):
-    n = 30; 
+    n = 33; 
     mu_in = np.array(n*[params[0]]); 
     sd_in = np.array(n*[params[1]]);
-    y0 = np.random.normal(mu_in,sd_in,30)
+    y0 = np.random.normal(mu_in,sd_in,n)
+#    mu_in = params[0]; 
+#    sd_in = params[1];
+#    y0 = np.random.normal(mu_in,sd_in,1)
     
     # Define Gaussian likelihood function
-    LL = n/2 * np.log(2*np.pi) + (1/2) * sum(np.log(sd_in**2)) + (1/2) * sum((y0 - mu_in)**2/(sd_in**2))
+    LL = (n/2 * np.log(2*np.pi) + 
+          (1/2) * sum(np.log(sd_in**2)) + 
+          (1/2) * sum((y0 - mu_in)**2/(sd_in**2)))
     
     print('LL = {:0.2f}'.format(LL))    
     
@@ -58,7 +66,7 @@ mu_MLE = lik_model['x'][0];
 sd_MLE = lik_model['x'][1];
 
 # Plot MLE results
-plt.figure(figsize=(10,6))
+plt.figure(figsize=(10,4))
 yMLE = scipy.stats.norm.pdf(x,mu_MLE,sd_MLE)
 plt.plot(x, yMLE, label='MLE')
 
@@ -66,7 +74,7 @@ plt.plot(x, yMLE, label='MLE')
 yKnown = scipy.stats.norm.pdf(x,mu_init,sd_init)
 plt.scatter(x, yKnown, s=5, c='black', label='Samples')
 
-plt.title('Gaussian Samples (qty 30) $\mu=0$, $\sigma=2$')
+plt.title('Gaussian Distribution with Noisy Gaussian Samples (qty 33) $\mu=0$, $\sigma=2$')
 plt.xlabel('x'); plt.ylabel('density'); 
 plt.legend()
 plt.show()
@@ -84,7 +92,7 @@ import matplotlib.pyplot as plt
 mu_init = 0; sd_init = 2; 
 
 # Draw 30 samples from a normal dist N(0,2)
-n=30; x = np.linspace(-10,10,n);
+n=300; x = np.linspace(-10,10,n);
 y0 = np.random.normal(mu_init,sd_init,n)
 
 # Add noise to samples
@@ -97,7 +105,7 @@ v_est = n-1;
 
 # Define likelihood function
 def model(params):
-    n = 30; 
+    n = 300; 
     mu = params[0]; 
     sd = params[1];
     v = params[2];
@@ -109,7 +117,7 @@ def model(params):
     (1/2) * (np.log(sd**2)) +
     ((v+1)/2) * (np.log(1+((y0 - mu)**2)/sd**2)))
     
-    print('LL =', LL)    
+    print('LL =', LL[0])    
     
     return LL
 
@@ -128,7 +136,7 @@ plt.plot(x, yMLE, label='MLE')
 yKnown = scipy.stats.norm.pdf(x,mu_init,sd_init)
 plt.scatter(x, yKnown, s=5, c='black', label='Samples')
 
-plt.title('Gaussian Samples + Noise (qty 30) $\mu=0$, $\sigma=2$')
+plt.title('Student-t Distribution with Gaussian Samples (qty 300) $\mu=0$, $\sigma=2$')
 plt.xlabel('x'); plt.ylabel('density'); 
 plt.legend()
 plt.show()
