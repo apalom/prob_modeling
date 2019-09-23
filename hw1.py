@@ -98,18 +98,18 @@ v_est = n-1;
 # Define likelihood function
 def model(params):
     n = 30; 
-    mu = np.array(n*[params[0]]); 
-    sd = np.array(n*[params[1]]); 
-    v = np.array(n*[params[2]]); 
-    y0 = np.random.normal(mu,sd,n)
+    mu = params[0]; 
+    sd = params[1];
+    v = params[2];
+    y0 = np.random.normal(mu,sd,1)
     
     # Student-t likelihood function
     #LL = n*np.log((gamma((v+1)/2))./(np.sqrt(np.pi*(v-2))*gamma(v/2))) + (1/2) * sum(np.log(sd**2)) + ((v+1)/2) * sum(np.log(1+((y0 - mu)**2)./sd**2))
     LL = (n*np.log((gamma((v+1)/2))/(np.sqrt(np.pi*(v-2))*gamma(v/2))) +
-    (1/2) * sum(np.log(sd**2)) +
-    ((v+1)/2) * sum(np.log(1+((y0 - mu)**2)/sd**2)))
+    (1/2) * (np.log(sd**2)) +
+    ((v+1)/2) * (np.log(1+((y0 - mu)**2)/sd**2)))
     
-    print('LL =', LL[0])    
+    print('LL =', LL)    
     
     return LL
 
