@@ -5,17 +5,58 @@ Created on Fri Sep 20 12:37:20 2019
 @author: Alex Palomino
 """
 
-#%% Q1
+#%% Q1 Student-t and Normal Distributions
 
+import numpy as np
+from scipy.stats import t
+from scipy.stats import norm
+import matplotlib.pyplot as plt
 
+#plt.figure(figsize=(6,6))
 
+x = np.linspace(-5,5,5000)
 
+dofs = [0.1, 1,10,100,10e6]
 
-#%% Q2
+for v in dofs:
+    lab= r'$ \nu $='+str(v)
+    plt.plot(x, t.pdf(x,v), lw=4, alpha=0.6, label=lab)    
 
+plt.plot(x, norm.pdf(x,0,1), 'w--',  markersize=0.1, label=r'$N(0,1)$')
 
+plt.xlabel('x'); plt.ylabel('density');
+plt.legend()
+plt.title("Student-$t$ Distributions")
+plt.tight_layout()
+plt.show() 
 
+#%% Q2 Beta Distributions
 
+import numpy as np
+from scipy.stats import beta
+import matplotlib.pyplot as plt
+
+fig = plt.figure()
+#ax = fig.add_subplot(111)    # The big subplot
+ax1 = fig.add_subplot(211)
+ax2 = fig.add_subplot(212)
+
+x = np.linspace(-0.1,2,5000)
+ax1.plot(x, beta.pdf(x,1,1), lw=1.5, alpha=0.6, label=r'($ \alpha $, $ \beta$)=(1,1)')
+ax1.plot(x, beta.pdf(x,5,5), lw=1.5, alpha=0.6, label=r'($ \alpha $, $ \beta$)=(5,5)')
+ax1.plot(x, beta.pdf(x,10,10), lw=1.5, alpha=0.6, label=r'($ \alpha $, $ \beta$)=(10,10)')
+ax1.set_ylabel('density');
+ax1.legend()
+ax1.title.set_text('Beta Distributions')
+
+ax2.plot(x, beta.pdf(x,1,2), lw=1.5, alpha=0.6, label=r'($ \alpha $, $ \beta$)=(1,2)')
+ax2.plot(x, beta.pdf(x,5,6), lw=1.5, alpha=0.6, label=r'($ \alpha $, $ \beta$)=(5,6)')
+ax2.plot(x, beta.pdf(x,10,11), lw=1.5, alpha=0.6, label=r'($ \alpha $, $ \beta$)=(10,11)')
+ax2.set_xlabel('x'); ax2.set_ylabel('density');
+ax2.legend()
+
+plt.tight_layout()
+plt.show() 
 
 #%% Q3a - Draw 30 Samples from a Gaussian(0,2)
 
