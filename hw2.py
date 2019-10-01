@@ -21,6 +21,20 @@ y_n = n*[w_true[0]] + x_n*w_true[1] + g_Noise
 
 plt.scatter(x_n,y_n)
 
+#%
+alpha = 2; beta = 25;
+x = np.random.uniform(-1,1,size=(n,n))
+
+w_mean = np.zeros(n).ravel()
+w_cov = np.zeros((n, n))
+np.fill_diagonal(w_cov, alpha)
+w_prior = sp.multivariate_normal.pdf(x, mean=w_mean, cov=w_cov)
+ 
+lik_mean = y_n
+lik_cov = np.zeros((n, n))
+np.fill_diagonal(lik_cov, beta**(-1))
+lik_fun = sp.multivariate_normal.pdf(x, mean=lik_mean, cov=lik_cov)
+
 #%% Q2 Binary Logistic & Probit Regression for Bank Note Auth
 
 bank_test = pd.read_csv('data/hw2_bank-note/test.csv', names=['var','skew','curt','entropy','genuine'])
