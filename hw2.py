@@ -12,21 +12,36 @@ import scipy.stats as sp
 import matplotlib.pyplot as plt
 import pandas as pd
 
-w_true = [-0.3, 0.5]
-
 n = 20;
+w_true = [-0.3, 0.5]
+w_v = [np.linspace(-1,1,n), np.linspace(-1,1,n)]
+
 x_n = np.random.uniform(-1,1,n)
 g_Noise = np.random.normal(0,0.2,n)
 y_n = n*[w_true[0]] + x_n*w_true[1] + g_Noise
 
 plt.scatter(x_n,y_n)
 
-#%
-alpha = 2; beta = 25;
+k = np.shape(w_true)[0]; alpha = 2; beta = 25;
 x = np.random.uniform(-1,1,size=(n,n))
 
+w_mean = np.zeros(k).ravel()
+w_cov = np.zeros((k, k))
+np.fill_diagonal(w_cov, alpha)
+w_covDet = np.linalg.det(w_cov)
+
+i=0;j=0;
+w_prior = np.zeros((n,n))
+for w0 in w_v[0]:
+    i+=1;
+    for w1 in w_v[1]:
+        j+=1
+        w_prior[i,j] = ((2*np.pi)**(-k/2))*(w_covDet**(-1/2))*np.exp(np.transpose([w0,w1])*w_cov*[w0,w1])
+
+#%%
+
 w_mean = np.zeros(n).ravel()
-w_cov = np.zeros((n, n))
+w_cov = np.zeros((2, 2))
 np.fill_diagonal(w_cov, alpha)
 w_prior = sp.multivariate_normal.pdf(x, mean=w_mean, cov=w_cov)
  
