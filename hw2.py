@@ -20,7 +20,7 @@ plt.rc('font', **font)
 
 n = 21;
 w_true = [-0.3, 0.5]
-w_v = [np.linspace(-1,1,n), np.linspace(-1,1,n)]
+w_v = np.round([np.linspace(-1,1,n), np.linspace(-1,1,n)],4)
 
 x_n = np.random.uniform(-1,1,n)
 g_Noise = np.random.normal(0,0.2,n)
@@ -51,14 +51,10 @@ for w0 in w_v[0]:
         j+=1
     i+=1
 
-
+w_prior = pd.DataFrame(w_prior,index=w_v[0], columns=w_v[1])
 ax = sns.heatmap(w_prior)
 ax.set_xlabel('w1')
-ax.set_xticks(np.arange(0, 22, 2))
-ax.set_xticklabels(np.round(np.arange(-1, 1.2, 0.2),2))
 ax.set_ylabel('w0')
-ax.set_yticks(np.arange(0, 22, 2))
-ax.set_yticklabels(np.round(np.arange(-1, 1.2, 0.2),2))
 
 #%% Plot Weight Prior Samples
 
@@ -69,17 +65,20 @@ plt.rc('font', **font)
 x=np.linspace(-1,1,20)
 
 for i in range(n):
-    w_0samp = np.random.choice(w_prior.flatten(), 1)[0]
-    w_1samp = np.random.choice(w_prior.flatten(), 1)[0]
+    w_0samp = np.random.choice(w_prior.values.flatten(), 1)[0]
+    w_1samp = np.random.choice(w_prior.values.flatten(), 1)[0]
     y_samp = w_0samp + x*w_1samp
     plt.plot(x,y_samp, label='[{0:.3f}, {1:.3f}]'.format(w_0samp,w_1samp))
 
 plt.xlabel('x')
+#plt.xlim((-1,1))
 plt.ylabel('y')
-plt.legend(loc='best', prop={'size': 12})
+#plt.ylim((-1,1))
+plt.legend(loc='best', prop={'size': 12}, title='Weights')
 plt.tight_layout()
 
 #%% Calculate Likelihood
+import random
 plt.figure(figsize=(10,8))
 
 w_cov = np.zeros((k, k))
@@ -87,12 +86,14 @@ np.fill_diagonal(w_cov, 1/beta)
 w_covDet = np.linalg.det(w_cov)
 w_covInv = np.linalg.inv(w_cov)
 
+# Posterior Dist of w given (x1,y1)
 i=0;j=0;
 w_lik = np.zeros((n,n))
 for w0 in w_v[0]:   
     j=0;
     for w1 in w_v[1]:
-        w01 = np.array([w0-y_n[j],w1-y_n[j]])
+        s = random.randint(0, 1);
+        w01 = np.array([w0-y_n[s],w1-y_n[s]])
         w01t = np.transpose(w01)
         xTsigx = np.matmul(np.matmul(w01t,w_covInv),w01)      
         
@@ -101,29 +102,26 @@ for w0 in w_v[0]:
         j+=1
     i+=1
 
+w_lik = pd.DataFrame(w_lik,index=w_v[0], columns=w_v[1])
 ax = sns.heatmap(w_lik)
 ax.set_xlabel('w1')
-ax.set_xticks(np.arange(0, 22, 2))
-ax.set_xticklabels(np.round(np.arange(-1, 1.2, 0.2),2))
 ax.set_ylabel('w0')
-ax.set_yticks(np.arange(0, 22, 2))
-ax.set_yticklabels(np.round(np.arange(-1, 1.2, 0.2),2))
 
 #%% Calculate Posterior = w_lik * w_prior
 
-plt.figure(figsize=(10,8))
+fig = plt.figure(figsize=(10,8))
+ax = fig.add_subplot(111, aspect='equal')
 
 w_post = np.dot(w_lik, w_prior)
+w_post = pd.DataFrame(w_post,index=w_v[0], columns=w_v[1])
 
-ax = sns.heatmap(w_post)
-ax.scatter(0,1, marker='*', s=100, color='yellow') 
+sns.heatmap(w_post)
+yStar=(n/2)+(n/2)*w_true[0]+0.1; xStar = (n/2)+(n/2)*w_true[1]-0.3; 
+plt.scatter(xStar, yStar, marker='*', s=100, color='white') 
 
 ax.set_xlabel('w1')
-ax.set_xticks(np.arange(0, 22, 2))
-ax.set_xticklabels(np.round(np.arange(-1, 1.2, 0.2),2))
 ax.set_ylabel('w0')
-ax.set_yticks(np.arange(0, 22, 2))
-ax.set_yticklabels(np.round(np.arange(-1, 1.2, 0.2),2))
+print(xStar, yStar)
 
 #%% Plot Weight Posterior Samples
 
@@ -134,16 +132,17 @@ plt.rc('font', **font)
 x=np.linspace(-1,1,20)
 
 for i in range(n):
-    w_0samp = np.random.choice(w_prior.flatten(), 1)[0]
-    w_1samp = np.random.choice(w_prior.flatten(), 1)[0]
+    w_0samp = np.random.choice(w_post.values.flatten(), 1)[0]
+    w_1samp = np.random.choice(w_post.values.flatten(), 1)[0]
     y_samp = w_0samp + x*w_1samp
     plt.plot(x,y_samp, label='[{0:.3f}, {1:.3f}]'.format(w_0samp,w_1samp))
 
 plt.xlabel('x')
+plt.xlim((-1,1))
 plt.ylabel('y')
-plt.legend(loc='best', prop={'size': 12})
+plt.ylim((-1,1))
+plt.legend(loc='best', prop={'size': 12}, title='Weights')
 plt.tight_layout()
-
 
 #%% Q2 Binary Logistic & Probit Regression for Bank Note Auth
 
