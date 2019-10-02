@@ -92,7 +92,9 @@ w_lik = np.zeros((n,n))
 for w0 in w_v[0]:   
     j=0;
     for w1 in w_v[1]:
-        s = random.randint(0, 1);
+        #s = random.randint(0, 1); # for 1c
+        #s = np.random.choice(5,1); # for 1d
+        s = np.random.choice(20,1); # for 1e
         w01 = np.array([w0-y_n[s],w1-y_n[s]])
         w01t = np.transpose(w01)
         xTsigx = np.matmul(np.matmul(w01t,w_covInv),w01)      
