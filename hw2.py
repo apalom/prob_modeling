@@ -10,6 +10,7 @@ Created on Mon Sep 30 17:00:17 2019
 import numpy as np
 import scipy.stats as sp
 import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
 
 n = 20;
@@ -29,14 +30,41 @@ w_mean = np.zeros(k).ravel()
 w_cov = np.zeros((k, k))
 np.fill_diagonal(w_cov, alpha)
 w_covDet = np.linalg.det(w_cov)
+w_covInv = np.linalg.inv(w_cov)
 
+# Calculate and Plot Weight Prior 
 i=0;j=0;
 w_prior = np.zeros((n,n))
-for w0 in w_v[0]:
-    i+=1;
+for w0 in w_v[0]:   
+    j=0;
     for w1 in w_v[1]:
+        w01 = np.array([w0,w1])
+        w01t = np.transpose(w01)
+        xTsigx = np.matmul(np.matmul(w01t,w_covInv),w01)      
+        
+        w_prior[i,j] = ((2*np.pi)**(-k/2))*(w_covDet**(-1/2))*np.exp(xTsigx)
+        print(i,j, xTsigx)
         j+=1
-        w_prior[i,j] = ((2*np.pi)**(-k/2))*(w_covDet**(-1/2))*np.exp(np.transpose([w0,w1])*w_cov*[w0,w1])
+    i+=1
+
+ax = sns.heatmap(w_prior)
+ax.set_xlabel('w1')
+ax.set_ylabel('w0')
+
+#%%
+
+x=np.linspace(-1,1,20)
+
+for i in range(n):
+    w_0samp = np.random.choice(w_prior.flatten(), 1)[0]
+    w_1samp = np.random.choice(w_prior.flatten(), 1)[0]
+    y_samp = w_0samp + x*w_1samp
+    plt.plot(x,y_samp, label='[{0:.3f},{1:.3f}]'.format(w_0samp,w_1samp))
+
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend(loc='best', prop={'size': 8})
+plt.tight_layout()
 
 #%%
 
