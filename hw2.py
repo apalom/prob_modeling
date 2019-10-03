@@ -8,6 +8,8 @@ Created on Mon Sep 30 17:00:17 2019
 import numpy as np
 import scipy.stats as sp
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 plt.style.use('ggplot')
 plt.figure(figsize=(8,6))
@@ -60,7 +62,10 @@ for w0 in w_v[0]:
         j+=1;
     i+=1;
 
-
+w_lik = pd.DataFrame(w_lik,index=w_v[0], columns=w_v[1])
+ax = sns.heatmap(w_lik)
+ax.set_xlabel('w1')
+ax.set_ylabel('w0')
 
 
 #%% Q1 Simulation Data Set
