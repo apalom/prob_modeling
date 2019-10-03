@@ -40,18 +40,19 @@ plt.xlabel('x')
 plt.ylabel('y')
 plt.legend()
 
-#%%
+#%% Plot Likelihood
 
 alpha = 2; beta = 25;
 
-w_v = np.round([np.linspace(-1,1,n), np.linspace(-1,1,n)],4)
+pxls = 5*n;
+w_v = [np.linspace(-1,1,pxls), np.linspace(-1,1,pxls)]
 
-w_lik = np.zeros((n,n))
+w_lik = np.zeros((pxls,pxls))
 
 i=0;
-for w0 in w_v[0]:
+for w1 in w_v[1]:
     j=0;
-    for w1 in w_v[1]:
+    for w0 in w_v[0]:
         w01 = np.array([w0,w1]).reshape(2,1)
         mu = linearModel(x_n,w01,n,1)
         lik_pr = sp.norm.pdf(y_n,mu,beta)
@@ -62,11 +63,33 @@ for w0 in w_v[0]:
         j+=1;
     i+=1;
 
-w_lik = pd.DataFrame(w_lik,index=w_v[0], columns=w_v[1])
+w_lik = pd.DataFrame(w_lik,index=np.round(w_v[0],1), columns=np.round(w_v[1],1))
+w_lik = w_lik.sort_index(ascending=False, axis=0)
 ax = sns.heatmap(w_lik)
-ax.set_xlabel('w1')
-ax.set_ylabel('w0')
+xStar = (pxls/2)*w_true[1]; 
+yStar=(pxls/2)+(pxls/2)*w_true[0]; 
+plt.scatter(xStar, yStar, marker='*', s=75, color='black', label='True Weight') 
+ax.set_xlabel('w0')
+ax.set_ylabel('w1')
+ax.set_title('Likelihood')
+plt.legend(loc='best', prop={'size': 10})
 
+#%% Plot Prior
+
+w0,w1 = np.meshgrid(np.linspace(-1,1,pxls),np.linspace(-1,1,pxls));
+w_v = np.c_[w0.ravel(),w1.ravel()];
+
+mu_prior = np.array([[0.0],[0.0]])
+alphaI = np.array([[alpha,0],[0.0,alpha]])
+alphaI_inv = np.linalg.inv(alphaI)
+
+w_prior = sp.multivariate_normal.pdf(w_v,mu_prior.ravel(),alphaI_inv)
+w_prior = w_prior.reshape(w0.shape);
+
+w_prior = pd.DataFrame(w_prior,index=np.round(w0,1), columns=np.round(w1,1))
+#w_lik = w_lik.sort_index(ascending=False, axis=0)
+
+ax = sns.heatmap(w_prior)
 
 #%% Q1 Simulation Data Set
 

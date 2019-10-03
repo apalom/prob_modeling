@@ -35,7 +35,7 @@ def linearmodel(x,w):
 
 #create data from polyonimal model
 N = 20;
-x_std = 0.3; #data variance assumed to be known a priori
+x_std = 0.2; #data variance assumed to be known a priori
 mb0 = np.array([[-0.3],[0.5]])
 x = np.vstack(np.linspace(0,3,int(N)));
 t = linearmodel(x,mb0) + np.vstack(np.random.normal(0,x_std,x.shape[0]))
@@ -54,7 +54,7 @@ M,B = np.meshgrid(np.linspace(-1,1,res),np.linspace(-1,1,res));
 MB = np.c_[M.ravel(),B.ravel()];
 
 #calculate likelihood function
-beta = 1; #standard deviation of data likelihood assumed to be known
+beta = 25; #standard deviation of data likelihood assumed to be known
 L = np.array([likelihood(t,linearmodel,x,mb.reshape(2,1),beta) for mb in MB]).reshape(M.shape)
 
 #draw
