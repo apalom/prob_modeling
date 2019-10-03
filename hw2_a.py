@@ -93,3 +93,15 @@ ax4.plot(mbMLE[0],mbMLE[1],'r*',markersize=10,label='Max Likelihood: '+label(mbM
 ax4.plot(m0[0],m0[1],'g*',markersize=10,label='Max Prior: '+label(m0));
 ax4.plot(mbPost[0],mbPost[1],'b*',markersize=10,label='Max Posterior'+label(mbPost));
 ax4.legend(loc='lower center');
+
+#%%
+
+mu = linearmodel(x,MB[0]);
+ps = stats.norm.pdf(t,mu,x_std)
+l = 1;
+for p in ps:
+    l = l*p;
+    
+#%%
+    
+L2 = np.array([likelihood(t,linearmodel,x,MB[2].reshape(2,1),beta))

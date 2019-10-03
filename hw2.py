@@ -5,6 +5,64 @@ Created on Mon Sep 30 17:00:17 2019
 @author: Alex
 """
 
+import numpy as np
+import scipy.stats as sp
+import matplotlib.pyplot as plt
+
+plt.style.use('ggplot')
+plt.figure(figsize=(8,6))
+font = {'family': 'Times New Roman', 'weight': 'light', 'size': 16}
+plt.rc('font', **font)
+
+n = 20
+w_true = np.array([[-0.3], [0.5]])
+k = np.shape(w_true)[0]
+
+mu0 = 0; std0 = 0.2;
+
+x_n = np.vstack(np.linspace(-1,1,n));
+
+g_Noise = np.vstack(np.random.normal(mu0,std0,n))
+
+# Linear Model
+def linearModel(x_n,w,n,noise):
+    y_n = n*[w[0]] + x_n*w[1] + noise*g_Noise
+    return y_n
+
+y_n = linearModel(x_n, w_true, n, 1)
+y_ntrue = linearModel(x_n, w_true, n, 0)
+
+plt.scatter(x_n,y_n, label='Noisey Samples')
+plt.plot(x_n,y_ntrue, 'k--', label='Linear Model')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+
+#%%
+
+alpha = 2; beta = 25;
+
+w_v = np.round([np.linspace(-1,1,n), np.linspace(-1,1,n)],4)
+
+w_lik = np.zeros((n,n))
+
+i=0;
+for w0 in w_v[0]:
+    j=0;
+    for w1 in w_v[1]:
+        w01 = np.array([w0,w1]).reshape(2,1)
+        mu = linearModel(x_n,w01,n,1)
+        lik_pr = sp.norm.pdf(y_n,mu,beta)
+        lik_fun = 1
+        for p in lik_pr:
+            lik_fun = p*lik_fun 
+        w_lik[i][j] = lik_fun
+        j+=1;
+    i+=1;
+
+
+
+
 #%% Q1 Simulation Data Set
 
 import numpy as np
