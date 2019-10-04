@@ -64,4 +64,4 @@ for idx, row in testPhi.iterrows():
         testLabel['err'].at[idx] = 1;
         
 predErr = (len(bank_test)-testLabel['err'].sum())/len(bank_test)
-print('\n Prediction Error: ', predErr)
+print('\n w_new', w_new, 'Prediction Error: ', predErr)
