@@ -28,7 +28,7 @@ g_Noise = np.vstack(np.random.normal(mu0,std0,n))
 
 # Linear Model
 def linearModel(x_n,w,n,noise):
-    y_n = n*[w[0]] + x_n*w[1] + noise*g_Noise
+    y_n = n*[w[0]] + x_n*w[1]# + noise*g_Noise
     return y_n
 
 y_n = linearModel(x_n, w_true, n, 1)
@@ -159,6 +159,93 @@ plt.ylim((-1,1))
 plt.legend(loc='best', prop={'size': 8}, title='Weights')
 plt.title('Posterior Samples')
 plt.tight_layout()
+
+
+#%% Calculate/Plot Likelihood with Sampled Data
+
+# Linear Model
+def linearModel(x_n,w,n,noise):
+    y_n = n*[w[0]] + x_n*w[1]# + noise*g_Noise
+    return y_n
+
+
+alpha = 2; beta = 25;
+
+pxls = 5*n;
+w_v = [np.linspace(-1,1,pxls), np.linspace(-1,1,pxls)]
+idx0 = np.round(w_v[0],1); idx1 = np.round(w_v[1],1);
+
+s=5
+w_likS = np.zeros((pxls,pxls))
+
+i=0;
+for w1 in w_v[1]:
+    j=0;
+    for w0 in w_v[0]:
+        w01 = np.array([w0,w1]).reshape(2,1)
+        mu = linearModel(x_n[0:s],w01,s,0)
+        lik_pr = sp.norm.pdf(y_n[0:s],mu,beta)
+        lik_fun = 1
+        for p in lik_pr:
+            lik_fun = p*lik_fun 
+        w_likS[i][j] = lik_fun
+        j+=1;
+    i+=1;
+
+#w_likS = pd.DataFrame(w_likS,index=np.round(idx0,1), columns=np.round(idx1,1))
+#w_likS = w_likS.sort_index(ascending=False, axis=0)
+#ax = sns.heatmap(w_likS)
+#xStar = (pxls/2)*w_true[1]; 
+#yStar=(pxls/2)+(pxls/2)*w_true[0]; 
+#plt.scatter(xStar, yStar, marker='*', s=75, color='black', label='True Weight') 
+#ax.set_xlabel('w0')
+#ax.set_ylabel('w1')
+#ax.set_title('Likelihood')
+#plt.legend(loc='best', prop={'size': 10})
+
+w_postS = np.multiply(w_prior,w_likS)
+
+
+#% Plot Weight Posterior Samples
+
+plt.style.use('ggplot')
+plt.figure(figsize=(8,6))
+font = {'family': 'Times New Roman', 'weight': 'light', 'size': 16}
+plt.rc('font', **font)
+x=np.linspace(-1,1,20)
+
+for i in range(n):
+    w_0samp = np.random.choice(w_postS.values.flatten(), 1)[0]
+    w_1samp = np.random.choice(w_postS.values.flatten(), 1)[0]
+    y_samp = w_0samp + x*w_1samp
+    plt.plot(x,y_samp, label='[{0:.3f}, {1:.3f}]'.format(w_0samp,w_1samp))
+
+plt.plot(x_n,y_ntrue, 'k--', label='Linear Model')
+plt.scatter(x_n[0:s],y_n[0:s], label='Observations')
+
+plt.xlabel('x')
+plt.xlim((-1,1))
+plt.ylabel('y')
+plt.ylim((-1,1))
+plt.legend(loc='best', prop={'size': 8}, title='Weights')
+plt.title('Posterior Samples')
+plt.tight_layout()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #%%
 
