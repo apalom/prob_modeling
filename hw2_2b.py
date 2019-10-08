@@ -19,7 +19,7 @@ Probit regression. Report the prediction accuracy
 """
 
 import numpy as np
-import scipy.stats as sp
+import scipy as sp
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -29,44 +29,111 @@ import seaborn as sns
 bank_test = pd.read_csv('data/hw2_bank-note/test.csv', names=['var','skew','curt','entropy','genuine'])
 bank_trn = pd.read_csv('data/hw2_bank-note/train.csv', names=['var','skew','curt','entropy','genuine']);
 
-#%% iterative re-weighted least squares
+#%% Probit Regression Update: L-BFGS Optimization
 
-phi = bank_trn[['var','skew','curt','entropy']].values
+phi = np.transpose(bank_trn[['var','skew','curt','entropy']].values)
 phiT = np.transpose(phi)
-phiTphi = np.matmul(phiT,phi);
-t = bank_trn[['genuine']]
-
-Hinv = np.linalg.inv(phiTphi + 2*np.identity(phi.shape[1]))
+twoI = 2*np.identity(phi.shape[0]);
+t = bank_trn[['genuine']].values
 
 i=0; err = 100;
-tol = 1E-5
+tol = 1E-5; maxiter = 100;
 
-w_old = np.array([[0.],[0.],[0.],[0.]])
-#w_old = np.random.normal(0,1,4).reshape(4,1)
+#w_old = np.array([[0.],[0.],[0.],[0.]])
+w_old = np.random.normal(0,1,4).reshape(4,1)
 
-twoI = 2*np.identity(phi.shape[1]);
+def probitUp(w_old, *args):
+    
+    phi=args[0];
+    t=args[1];
+    
+    a = np.matmul(np.transpose(w_old),phi).reshape(len(phiT),1)
+    ta = np.multiply(t,a)
+    
+    n_pdf = sp.stats.norm.pdf(a);
+    n_cdf = sp.stats.norm.cdf(ta);   
+    
+    g = np.divide(n_pdf,n_cdf)
+    tg = np.multiply(t,g)
+    gradE = np.matmul(phi,tg)
+    
+    h1 = np.matmul(n_pdf**2,np.transpose(n_cdf**(-2)))
+    h2 = np.matmul(np.matmul(t,np.transpose(a)),n_pdf*np.transpose(n_cdf**(-1)))
+    h12= h1+h2
+    
+    h = np.matmul(np.matmul(-phi,h12),np.transpose(phi)) + twoI
+    hInv = h**(-1)
+    
+    update = -np.matmul(hInv,gradE)
+    
+    w_new = w_old - update
+    
+    err = np.linalg.norm(w_old - w_new)
+    #w_old = w_new
+    return err
+    
+results = sp.optimize.fmin_l_bfgs_b(probitUp, x0=w_old, args=(phi,t), approx_grad=True, maxiter=100)
+
+w_new = results[0]
+
+testPhi = bank_test[['var','skew','curt','entropy']]
+testLabel = bank_test[['genuine']]
+
+testLabel['pred'] = np.zeros((len(testPhi),1))
+testLabel['err'] = np.zeros((len(testPhi),1))
+
+for idx, row in testPhi.iterrows():
+    if np.dot(row,w_new) <= 0:
+        label = 0;
+    elif np.dot(row,w_new) > 0:
+        label = 1;
+    
+    testLabel['pred'].at[idx] = label
+    
+    if label == testLabel['genuine'].at[idx]:
+        testLabel['err'].at[idx] = 1;
+        
+predErr = (len(bank_test)-testLabel['err'].sum())/len(bank_test)
+print('\nSteps: ', i)
+print('Pred Error: ', predErr, '\n w_new: \n', w_new)
+print('\n')
+
+
+#%% iterative re-weighted least squares
+
+phi = np.transpose(bank_trn[['var','skew','curt','entropy']].values)
+phiT = np.transpose(phi)
+twoI = 2*np.identity(phi.shape[0]);
+t = bank_trn[['genuine']].values
+
+i=0; err = 100;
+tol = 1E-5; maxiter = 100;
+
+#w_old = np.array([[0.],[0.],[0.],[0.]])
+w_old = np.random.normal(0,1,4).reshape(4,1)
 
 while err > tol:
     
-    n_pdf = np.random.normal()
-    n_cdf = sp.norm.cdf(n_pdf)    
+    a = np.matmul(np.transpose(w_old),phi).reshape(len(phiT),1)
+    ta = np.multiply(t,a)
     
-    g1 = np.matmul(phiT,t)*(n_pdf/n_cdf)
-    g2 = np.matmul(phiT,(1-t))*(n_pdf/(1-n_cdf))
-    g3 = np.matmul(twoI,w_old)
+    n_pdf = sp.stats.norm.pdf(a);
+    n_cdf = sp.stats.norm.cdf(ta);   
     
-    gradE = -(g1+g2)+g3
+    g = np.divide(n_pdf,n_cdf)
+    tg = np.multiply(t,g)
+    gradE = np.matmul(phi,tg)
     
-    h1 = np.matmul(phiT,t)*(twoI/(np.sqrt(2*np.pi)*n_cdf) + twoI*(n_pdf**2)/(n_cdf**2))
-    h2 = np.matmul(phiT,(1-t))*(twoI/(np.sqrt(2*np.pi)*(1-n_cdf))-twoI*(n_pdf**2)/(n_cdf**2))
-    h3 = twoI
-    h = -(h1-h2)+h3
+    h1 = np.matmul(n_pdf**2,np.transpose(n_cdf**(-2)))
+    h2 = np.matmul(np.matmul(t,np.transpose(a)),n_pdf*np.transpose(n_cdf**(-1)))
+    h12= h1+h2
     
-    Hinv = np.linalg.inv(h)
+    h = np.matmul(np.matmul(-phi,h12),np.transpose(phi)) + twoI
+    hInv = h**(-1)
     
-    update = np.matmul(Hinv,gradE)
+    update = -np.matmul(hInv,gradE)
     
-    w_new = w_old - update 
+    w_new = w_old - update
     
     err = np.linalg.norm(w_old - w_new)
     w_old = w_new
@@ -75,11 +142,32 @@ while err > tol:
     
     print('Step', i, err)
     
-    if i > 100:
+    if i > maxiter:
         err = 0;
         print('\n *** No-Convergence *** ')
 
+   
+testPhi = bank_test[['var','skew','curt','entropy']]
+testLabel = bank_test[['genuine']]
 
+testLabel['pred'] = np.zeros((len(testPhi),1))
+testLabel['err'] = np.zeros((len(testPhi),1))
+
+for idx, row in testPhi.iterrows():
+    if np.dot(row,w_new) <= 0:
+        label = 0;
+    elif np.dot(row,w_new) > 0:
+        label = 1;
+    
+    testLabel['pred'].at[idx] = label
+    
+    if label == testLabel['genuine'].at[idx]:
+        testLabel['err'].at[idx] = 1;
+        
+predErr = (len(bank_test)-testLabel['err'].sum())/len(bank_test)
+print('\nSteps: ', i)
+print('Pred Error: ', predErr, '\n w_new: \n', w_new)
+print('\n')
 
 
 
