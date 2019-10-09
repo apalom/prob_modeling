@@ -46,7 +46,7 @@ plt.legend()
 
 alpha = 2; beta = 25;
 
-pxls = 5*n;
+pxls = n+1;
 w0,w1 = np.meshgrid(np.linspace(-1,1,pxls),np.linspace(-1,1,pxls));
 w_v = np.c_[w0.ravel(),w1.ravel()];
 
@@ -61,16 +61,16 @@ w_prior = sp.multivariate_normal.pdf(w_v,mu_prior.ravel(),alphaI_inv)
 w_prior = w_prior.reshape(w0.shape);
 
 w_prior = pd.DataFrame(w_prior,index=idx0, columns=idx1)
-w_prior = w_prior.sort_index(ascending=False, axis=0)
+#w_prior = w_prior.sort_index(ascending=False, axis=0)
 
 plt.style.use('ggplot')
 plt.figure(figsize=(10,8))
 ax = sns.heatmap(w_prior, cmap="Reds")
-xStar = (pxls/2)*w_true[1]; 
-yStar=(pxls/2)+(pxls/2)*w_true[0]; 
+xStar = (pxls/2)+(pxls/2)*w_true[1]; 
+yStar = (pxls/2)+(pxls/2)*w_true[0]; 
 plt.scatter(xStar, yStar, marker='*', s=75, color='black', label='True Weight') 
-ax.set_xlabel('w0')
-ax.set_ylabel('w1')
+ax.set_xlabel('w1')
+ax.set_ylabel('w0')
 ax.set_title('Prior')
 plt.legend(loc='best', prop={'size': 10})
 
@@ -103,7 +103,7 @@ plt.tight_layout()
 alpha = 2; beta = 25;
 
 # Add observations
-pts = 20;
+pts = 1;
 obs = np.concatenate((x_n[0:pts], y_n[0:pts]), axis=1)
 true = np.concatenate((x_n[0:pts], y_ntrue[0:pts]), axis=1)
 
@@ -122,9 +122,9 @@ w_post = w_post.sort_index(ascending=False, axis=0)
 plt.style.use('ggplot')
 plt.figure(figsize=(10,8))
 ax = sns.heatmap(w_post, cmap="Blues")
-xStar = (pxls/2)*w_true[1]; 
-yStar=(pxls/2)+(pxls/2)*w_true[0]; 
-plt.scatter(xStar, yStar, marker='*', s=75, color='black', label='True Weight') 
+xStar = (pxls/2)+(pxls/2)*w_true[1]; 
+yStar = (pxls/2)+(pxls/2)*w_true[0];
+plt.scatter(xStar, yStar, marker='*', s=75, color='white', label='True Weight') 
 ax.set_xlabel('w0')
 ax.set_ylabel('w1')
 ax.set_title('Posterior given {} observation'.format(pts))
