@@ -60,6 +60,7 @@ font = {'family': 'Times New Roman', 'weight': 'light', 'size': 16}
 plt.rc('font', **font)
 
 #plt.plot(x0, pz(x0), c='olive', label='Normalized Dist')
+#plt.plot(x0, pz(x0), c='olive', alpha=0.3)
 plt.fill(x0, pz(x0), x0, np.zeros(len(x0)), c='olive', alpha=0.3)
 plt.axvline(z0, color='k', linestyle=':', lw=1.5)
 plt.text(4.2, 0.72, 'Z =' + str(np.round(Z,3)))
