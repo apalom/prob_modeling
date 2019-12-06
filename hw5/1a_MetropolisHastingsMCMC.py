@@ -66,6 +66,8 @@ print('Acceptance Ratio = %.2f' % accRatio[t])
 #% plot chain histogram
 
 plt.style.use('ggplot')
+font = {'family': 'Times New Roman', 'weight': 'light', 'size': 16}
+plt.rc('font', **font)
 plt.figure(figsize=(10,4))
 plt.hist(zPicks, density=True, bins=50, alpha=0.75, edgecolor='white', label='MCMC')
 plt.plot(x0, pz(x0), c='olive', lw=1.5, label='GQ')

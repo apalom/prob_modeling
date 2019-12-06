@@ -66,3 +66,6 @@ zPicks = zStationary[0::10]
 
 accRatio[t] = np.sum(accept[burnin:])/smpls;
 print('Acceptance Ratio = %.2f' % accRatio[t])
+
+font = {'family': 'Times New Roman', 'weight': 'light', 'size': 16}
+plt.rc('font', **font)
