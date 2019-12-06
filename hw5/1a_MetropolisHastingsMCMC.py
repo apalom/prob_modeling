@@ -20,15 +20,13 @@ import scipy.stats as sp
 import matplotlib.pyplot as plt
 
 def pDist(z):
-    #sigmoid = (1/(1+np.exp(-10*z - 3)));
-    #np.exp(-z**2)*sigmoid
     return np.exp(-z**2)*((1+np.exp(-10*z-3))**-1)
         
 smpls=50000; burnin=100000; total=smpls+burnin;
 
-tau = np.array([0.005, 0.01, 0.02, 0.05, 1]);
+tau = np.array([0.01, 0.1, 0.2, 0.5, 1]);
 
-t = 3;
+t = 4;
 tau1 = tau[t];
 
 z = np.zeros(total);
