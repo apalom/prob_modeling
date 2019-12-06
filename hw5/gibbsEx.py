@@ -7,7 +7,7 @@ https://kieranrcampbell.github.io/blog/2016/05/15/gibbs-sampling-bayesian-linear
 """
 
 import numpy as np
-from matplotlib.pyplot import plt
+import matplotlib.pyplot as plt
 import pandas as pd
 plt.rcParams['figure.figsize'] = (10, 5)
 
@@ -58,6 +58,14 @@ hypers = {"mu_0": 0,
          "tau_1": 1,
          "alpha": 2,
          "beta": 1}
+
+def sample_beta_0(y, x, beta_1, tau, mu_0, tau_0):
+    N = len(y)
+    assert len(x) == N
+    precision = tau_0 + tau * N
+    mean = tau_0 * mu_0 + tau * np.sum(y - beta_1 * x)
+    mean /= precision
+    return np.random.normal(mean, 1 / np.sqrt(precision))
 
 def gibbs(y, x, iters, init, hypers):
     assert len(y) == len(x)
