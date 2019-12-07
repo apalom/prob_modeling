@@ -69,50 +69,72 @@ print('z2 mean = ', np.mean(smpl[:,1]), '| z2 std = ', np.std(smpl[:,1]))
 import pandas as pd
 
 df_smpl = pd.DataFrame(smpl, columns=['z1','z2'])
-
-def sample_z1(y, x, z2):
-    N = len(y)
-    mu = np.sum(y - z2 * x)/N    
-    return np.random.normal(mu, 1 / np.sqrt(N))
-    
-def sample_z2(y, x, z1):
-    N = len(y)
-    mu = np.sum(y - z1 * x)/N    
-    return np.random.normal(mu, 1 / np.sqrt(N))
-
-def sample_beta_0(y, x, beta_1, tau, mu_0, tau_0):
-    N = len(y)
-    assert len(x) == N
-    precision = tau_0 + tau * N
-    mean = tau_0 * mu_0 + tau * np.sum(y - beta_1 * x)
-    mean /= precision
-    return np.random.normal(mean, 1 / np.sqrt(precision))
-    
-#%% initialize parameter trace
-n_iters = 500;
+  
+#% initialize parameter trace
+n_iters = 5000;
 z1, z2 = np.empty((2, n_iters + 1));
 trace = np.zeros((n_iters, 2))
 z1[0], z2[0] = -4, -4;
 
+def YcondX(Y, X, z, rho):
+    N = len(Y)
+    b = rho * np.std(Y) / np.std(X);
+    c = np.sum(Y - b * X);
+    
+    cond_mu = (b*np.sum(z) / N) + c;
+    cond_std = np.sqrt(1-rho**2)*np.std(Y)
+    
+    return np.random.normal(cond_mu, cond_std)
+
+def form(z, rho):
+    return ((1 - rho**2)**0.5)*np.random.randn(1, 1) + rho*z;
+    
+def cond(z, sigma):
+    cond_mu = sigma[0][1]*(sigma[1][1]**-1) * z
+    cond_std = sigma[0][0] - sigma[0][1]*(sigma[1][1]**-1)*sigma[1][0]
+    return np.random.normal(cond_mu, cond_std)
+
 # Sample from conditionals
-for i in range(n_iters):    
+for i in range(n_iters):
+    
+    z1[i+1] = cond(z2[i], sigma)
+    z2[i+1] = cond(z1[i], sigma)
+    
+    #z1[i+1] = YcondX(df_smpl.z1, df_smpl.z2, z2[i], rho)
+    #z2[i+1] = YcondX(df_smpl.z2, df_smpl.z1, z1[i], rho)
+    
+    #z1[i+1] = form(z2[i], rho)
+    #z2[i+1] = form(z1[i], rho)
 
-    
-    #Draw theta_2 given theta_1
-    z1[i+1] = ((1 - rho**2)**0.5)*np.random.randn(1, 1) + rho*z2[i];
- 
-    #Draw theta_1 given theta_2
-    z2[i+1] = ((1 - rho**2)**0.5)*np.random.randn(1, 1) + rho*z1[i];
-    
-    #trace[i,:] = np.array((z1, z2))
-    
-#trace.columns = ['z1', 'z2']
+#%% plot samples
+plt.figure(figsize=(10,6))
 
-plt.plot(z1, label='z1')
-plt.plot(z2, label='z2')
+pts = 5000;
+plt.plot(z1[:pts], z2[:pts], lw=1.5, alpha=0.4)
+plt.scatter(z1[:pts], z2[:pts], marker='o', c = 'k')
+
+plt.title("Gibbs Sampling")
+plt.xlabel("z1")
+plt.ylabel("z2")
+
+plt.show()
+
+#%% plot trace
+plt.figure(figsize=(10,6))
+
+plt.plot(z1[:pts], label='z1')
+plt.plot(z2[:pts], label='z2')
 
 plt.title("Parameter Trace")
 plt.xlabel("Sample")
 plt.ylabel("Value")
 plt.legend()
 plt.show()
+
+
+#%%    
+    # sample z1 given z2
+    z1[i+1] = form1(z2[i])
+ 
+    # sample z2 given z1
+    z2[i+1] = ((1 - rho**2)**0.5)*np.random.randn(1, 1) + rho*z1[i];
