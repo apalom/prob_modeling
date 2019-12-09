@@ -75,19 +75,6 @@ n_iters = 5000;
 z1, z2 = np.empty((2, n_iters + 1));
 trace = np.zeros((n_iters, 2))
 z1[0], z2[0] = -4, -4;
-
-def YcondX(Y, X, z, rho):
-    N = len(Y)
-    b = rho * np.std(Y) / np.std(X);
-    c = np.sum(Y - b * X);
-    
-    cond_mu = (b*np.sum(z) / N) + c;
-    cond_std = np.sqrt(1-rho**2)*np.std(Y)
-    
-    return np.random.normal(cond_mu, cond_std)
-
-def form(z, rho):
-    return ((1 - rho**2)**0.5)*np.random.randn(1, 1) + rho*z;
     
 def cond(z, sigma):
     cond_mu = sigma[0][1]*(sigma[1][1]**-1) * z
@@ -100,11 +87,7 @@ for i in range(n_iters):
     z1[i+1] = cond(z2[i], sigma)
     z2[i+1] = cond(z1[i], sigma)
     
-    #z1[i+1] = YcondX(df_smpl.z1, df_smpl.z2, z2[i], rho)
-    #z2[i+1] = YcondX(df_smpl.z2, df_smpl.z1, z1[i], rho)
-    
-    #z1[i+1] = form(z2[i], rho)
-    #z2[i+1] = form(z1[i], rho)
+
 
 #%% plot samples
 plt.figure(figsize=(10,6))
